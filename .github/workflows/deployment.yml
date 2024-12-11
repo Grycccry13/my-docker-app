@@ -13,7 +13,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build the Docker image
-        run: docker build -t ghcr.io/$GITHUB_REPOSITORY/my-docker-app:latest .
+        run: |
+          docker build -t ghcr.io/$GITHUB_REPOSITORY/my-docker-app:latest .
+          echo "Image built successfully"
 
       - name: Login to GHCR
         uses: actions/github-script@v6
@@ -27,19 +29,17 @@ jobs:
             console.log(response.data.token);
             core.setOutput('docker_token', response.data.token);
 
-      - name: Authenticate with Docker Hub
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR -p ${{ steps.Login_to_GHCR.outputs.docker_token }}
+      - name: Authenticate with GHCR
+        run: |
+          echo "${{ steps.Login_to_GHCR.outputs.docker_token }}" | docker login ghcr.io -u $GITHUB_ACTOR -p -
+          echo "Logged in to GHCR successfully"
 
       - name: Push the Docker image
-        run: docker push ghcr.io/$GITHUB_REPOSITORY/my-docker-app:latest
+        run: |
+          docker push ghcr.io/$GITHUB_REPOSITORY/my-docker-app:latest
+          echo "Image pushed successfully"
 
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v1.0.0
-          name: v1.0.0
-          body: Release of Docker image
-          draft: false
-          prerelease: false
+      - name: Output Image URL
+        run: |
+          echo "::set-output name=image_url::ghcr.io/$GITHUB_REPOSITORY/my-docker-app:latest"
+
