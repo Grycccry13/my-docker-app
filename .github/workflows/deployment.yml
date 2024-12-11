@@ -19,9 +19,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Build the Docker image
+      - name: Build and Tag the Docker image
+        id: build
         run: |
-          docker buildx build --platform linux/amd64 -t ghcr.io/grycccry13/my-docker-app:latest .
+          IMAGE_TAG="ghcr.io/grycccry13/my-docker-app:latest"
+          docker buildx build --platform linux/amd64 -t "${IMAGE_TAG}" .
+          echo "::set-output name=image_tag::${IMAGE_TAG}"
           echo "Image built successfully"
 
       - name: Authenticate with GHCR
@@ -33,9 +36,9 @@ jobs:
 
       - name: Push the Docker image
         run: |
-          docker push ghcr.io/grycccry13/my-docker-app:latest
+          docker push ${{ steps.build.outputs.image_tag }}
           echo "Image pushed successfully"
 
       - name: Output Image URL
         run: |
-          echo "::set-output name=image_url::ghcr.io/grycccry13/my-docker-app:latest"
+          echo "::set-output name=image_url::${{ steps.build.outputs.image_tag }}"
