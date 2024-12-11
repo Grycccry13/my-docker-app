@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -45,4 +49,5 @@ jobs:
       - name: Output Image URL
         run: |
           echo "::set-output name=image_url::ghcr.io/grycccry13/my-docker-app:latest"
+
 
