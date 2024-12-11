@@ -24,22 +24,12 @@ jobs:
           docker buildx build --platform linux/amd64 -t ghcr.io/grycccry13/my-docker-app:latest .
           echo "Image built successfully"
 
-      - name: Login to GHCR
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const token = context.github.token;
-            const response = await github.rest.actions.createRegistrationTokenForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-            console.log(response.data.token);
-            core.setOutput('docker_token', response.data.token);
-
       - name: Authenticate with GHCR
-        run: |
-          echo "${{ steps.Login_to_GHCR.outputs.docker_token }}" | docker login ghcr.io -u $GITHUB_ACTOR -p -
-          echo "Logged in to GHCR successfully"
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push the Docker image
         run: |
@@ -49,5 +39,3 @@ jobs:
       - name: Output Image URL
         run: |
           echo "::set-output name=image_url::ghcr.io/grycccry13/my-docker-app:latest"
-
-
